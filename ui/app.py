@@ -25,7 +25,9 @@ def main():
     """)
 
     # Crear pestañas para organizar la interfaz
-    tab_predict, tab_analytics = st.tabs(["Nueva Predicción", "Análisis del Modelo"])
+    tab_predict, tab_analytics = st.tabs(
+        ["Nueva Predicción", "Análisis del Modelo"]
+    )
 
     with tab_predict:
         render_prediction_tab()
@@ -143,7 +145,7 @@ def render_prediction_tab():
 
 
 def display_prediction_result(result: dict):
-
+   
     risk_score = result["churn_risk_score"]
     will_churn = result["will_churn"]
 
@@ -173,7 +175,7 @@ def display_prediction_result(result: dict):
 
 
 def render_analytics_tab():
-
+    
     st.header("Auditoría del Modelo (Explainable AI)")
     st.write(
         "Este panel muestra el rendimiento del modelo Campeón activo (CatBoost) y explica cómo toma sus decisiones."
@@ -192,7 +194,7 @@ def render_analytics_tab():
     with col1:
         st.subheader("Matriz de Confusión")
         st.image(Image.open(f"{img_dir}/confusion_matrix.png"), use_column_width=True)
-https://customer-churn-prediction-platform-5k5a3mc69taczdd2pxvzkr.streamlit.app/5https://customer-churn-prediction-platform-5k5a3mc69taczdd2pxvzkr.streamlit.apphttps://customer-churn-prediction-platform-5k5a3mc69taczdd2pxvzkr.streamlit.app/
+
         st.subheader("Importancia de Variables (SHAP)")
         st.image(Image.open(f"{img_dir}/shap_bar.png"), use_column_width=True)
 
