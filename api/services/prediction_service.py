@@ -11,7 +11,6 @@ from database.repositories.prediction_repository import PredictionRepository
 
 
 class PredictionService:
-    """Servicio que maneja la lógica de inferencia y registro en DB."""
 
     MODEL_PATH = "ml/saved_models/champion_model.joblib"
     MODEL_VERSION = "v1.0.0"
@@ -27,16 +26,12 @@ class PredictionService:
             )
 
     def predict_single(self, data: CustomerData) -> PredictionResponse:
-        """Realiza una predicción para un solo cliente y la guarda en DB."""
 
-        # 1. Convertir Pydantic a diccionario excluyendo el ID
         input_dict = data.model_dump()
         customer_id = input_dict.pop("customerID")
 
-        # 2. Convertir a DataFrame (Formato requerido por nuestro Pipeline)
         df = pd.DataFrame([input_dict])
 
-        # 3. Inferencia
         try:
             prob = float(self.model.predict_proba(df)[0, 1])
             label = int(self.model.predict(df)[0])
@@ -45,7 +40,6 @@ class PredictionService:
                 status_code=500, detail=f"Error en inferencia: {str(e)}"
             )
 
-        # 4. Guardar en Base de Datos para auditoría
         db_prediction = PredictionModel(
             customer_id=customer_id,
             features=input_dict,
@@ -55,7 +49,6 @@ class PredictionService:
         )
         saved_record = self.repo.create(db_prediction)
 
-        # 5. Retornar respuesta formateada
         return PredictionResponse(
             prediction_id=saved_record.id,
             customer_id=customer_id,

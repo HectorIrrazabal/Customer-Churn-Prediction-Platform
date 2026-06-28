@@ -96,3 +96,5 @@ class PredictionResponse(BaseModel):
     churn_risk_score: float = Field(ge=0.0, le=1.0)
     will_churn: bool
     model_version: str
+    top_risk_factors: list[str] = []
+    top_retention_factors: list[str] = []
