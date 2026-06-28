@@ -1,5 +1,3 @@
-"""Capa de servicio para orquestar predicciones y persistencia."""
-
 import joblib
 import pandas as pd
 from fastapi import HTTPException
@@ -8,10 +6,10 @@ from sqlalchemy.orm import Session
 from api.schemas.churn import CustomerData, PredictionResponse
 from database.models.prediction import PredictionModel
 from database.repositories.prediction_repository import PredictionRepository
+from ml.inference.explainer import ShapExplainer
 
 
 class PredictionService:
-
     MODEL_PATH = "ml/saved_models/champion_model.joblib"
     MODEL_VERSION = "v1.0.0"
 
@@ -19,6 +17,7 @@ class PredictionService:
         self.repo = PredictionRepository(db_session)
         try:
             self.model = joblib.load(self.MODEL_PATH)
+            self.explainer = ShapExplainer(self.model)
         except Exception as e:
             raise HTTPException(
                 status_code=503,
@@ -26,7 +25,6 @@ class PredictionService:
             )
 
     def predict_single(self, data: CustomerData) -> PredictionResponse:
-
         input_dict = data.model_dump()
         customer_id = input_dict.pop("customerID")
 
@@ -35,9 +33,13 @@ class PredictionService:
         try:
             prob = float(self.model.predict_proba(df)[0, 1])
             label = int(self.model.predict(df)[0])
+
+            explanations = self.explainer.get_local_explanation(df)
+
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=f"Error en inferencia: {str(e)}"
+                status_code=500,
+                detail=f"Error en inferencia o explicabilidad: {str(e)}",
             )
 
         db_prediction = PredictionModel(
@@ -55,4 +57,6 @@ class PredictionService:
             churn_risk_score=prob,
             will_churn=bool(label),
             model_version=self.MODEL_VERSION,
+            top_risk_factors=explanations["top_risk_factors"],
+            top_retention_factors=explanations["top_retention_factors"],
         )

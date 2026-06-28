@@ -1,4 +1,5 @@
 import os
+
 import requests
 import streamlit as st
 from PIL import Image
@@ -180,23 +181,15 @@ def display_prediction_result(result: dict, payload: dict):
             st.success("CLIENTE SEGURO")
 
     with col2:
-        st.markdown("### ¿Por qué?")
+        st.markdown("### 🔍 ¿Por qué?")
         st.markdown("Principales factores que influyen en esta predicción:")
 
         if risk_score > 0.5:
-            st.markdown(
-                f"-  **Tipo de Contrato ({payload['Contract']}):** Los contratos a corto plazo facilitan la salida del cliente."
-            )
-            st.markdown(
-                f"-  **Cargo Mensual (${payload['MonthlyCharges']}):** Montos elevados sin servicios de retención aumentan la fricción."
-            )
+            for factor in result.get("top_risk_factors", []):
+                st.markdown(f"- 🔴 **{factor}**")
         else:
-            st.markdown(
-                f"-  **Antigüedad ({payload['tenure']} meses):** Clientes con largo historial tienden a ser leales."
-            )
-            st.markdown(
-                "-  **Contrato a largo plazo:** Asegura la permanencia y compromiso comercial."
-            )
+            for factor in result.get("top_retention_factors", []):
+                st.markdown(f"- 🟢 **{factor}**")
 
 
 def render_analytics_tab():
