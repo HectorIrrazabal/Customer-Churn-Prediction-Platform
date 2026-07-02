@@ -2,7 +2,6 @@ from fastapi.testclient import TestClient
 
 from api.main import app
 
-# Cliente de pruebas de FastAPI (no requiere levantar el servidor real)
 client = TestClient(app)
 
 

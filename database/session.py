@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 DATABASE_URL = environ.get("DATABASE_URL", "sqlite:///./churn_prediction.db")
 
-# Configuración especial si se usa SQLite para evitar bloqueos de hilos en FastAPI
+
 engine_kwargs = {}
 if DATABASE_URL.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}
