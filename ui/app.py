@@ -32,7 +32,7 @@ map_pago = {
 def main():
     st.title("Plataforma de Predicción de Fuga de Clientes")
     st.markdown(
-        "Este dashboard consume un modelo de **Machine Learning (CatBoost)** a través de una **API REST (FastAPI)** para evaluar el riesgo de que un cliente abandone los servicios de la empresa."
+        "Este dashboard consume un modelo de **Machine Learning ** a través de una **API REST (FastAPI)** para evaluar el riesgo de que un cliente abandone los servicios de la empresa."
     )
 
     tab_predict, tab_analytics = st.tabs(["Nueva Predicción", "Análisis del Modelo"])
@@ -195,7 +195,7 @@ def display_prediction_result(result: dict, payload: dict):
 def render_analytics_tab():
     st.header("Auditoría del Modelo (Explainable AI)")
     st.write(
-        "Este panel muestra el rendimiento del modelo Campeón activo (CatBoost) y explica cómo toma sus decisiones."
+        "Este panel muestra el rendimiento del modelo  activo  y explica cómo toma sus decisiones."
     )
 
     img_dir = "docs/assets/images"
