@@ -1,5 +1,3 @@
-"""Orquestador de entrenamiento con MLflow y Optuna."""
-
 import os
 
 import joblib
@@ -14,8 +12,6 @@ from ml.training.search_spaces import get_model_and_space
 
 
 class ModelTrainer:
-    """Clase principal para buscar, evaluar y guardar el mejor modelo de Churn."""
-
     def __init__(self, experiment_name: str = "Churn_Prediction_Experiment"):
         self.experiment_name = experiment_name
         self.models_to_try = [
@@ -25,38 +21,26 @@ class ModelTrainer:
             "LightGBM",
             "CatBoost",
         ]
-        # Configurar tracking URI local para MLflow
         mlflow.set_tracking_uri("sqlite:///mlflow.db")
         mlflow.set_experiment(self.experiment_name)
 
     def optimize_model(
         self, X: pd.DataFrame, y: pd.Series, model_name: str, n_trials: int = 5
     ) -> optuna.Study:
-        """Ejecuta la optimización de Optuna para un modelo específico."""
-
         def objective(trial):
             with mlflow.start_run(
                 nested=True, run_name=f"{model_name}_trial_{trial.number}"
             ):
-                # 1. Obtener pipeline de preprocesamiento
                 preprocessor = create_preprocessor_pipeline()
-
-                # 2. Obtener modelo con hiperparámetros propuestos
                 clf = get_model_and_space(trial, model_name)
-
-                # 3. Crear pipeline completo (Preprocesamiento + Modelo)
-                # Esto previene el Data Leakage durante el Cross-Validation
                 full_pipeline = Pipeline(
                     steps=[("preprocessor", preprocessor), ("classifier", clf)]
                 )
-
-                # 4. Evaluar usando Cross Validation (ROC AUC para desbalanceo)
                 scores = cross_val_score(
                     full_pipeline, X, y, cv=3, scoring="roc_auc", n_jobs=-1
                 )
                 roc_auc_mean = scores.mean()
 
-                # 5. Registrar en MLflow
                 mlflow.log_params(trial.params)
                 mlflow.log_metric("roc_auc_cv", roc_auc_mean)
                 mlflow.log_param("model_type", model_name)
@@ -68,47 +52,36 @@ class ModelTrainer:
         return study
 
     def run_training_pipeline(self, X: pd.DataFrame, y: pd.Series) -> str:
-        """Ejecuta la comparación entre todos los modelos y guarda el campeón."""
-        print(f"🚀 Iniciando experimento MLflow: {self.experiment_name}")
-
+        print(f" Iniciando experimento MLflow: {self.experiment_name}")
         best_overall_score = 0.0
         best_overall_model_name = ""
         best_pipeline = None
 
         with mlflow.start_run(run_name="Champion_Model_Search"):
             for model_name in self.models_to_try:
-                print(f"🔍 Optimizando {model_name}...")
-
-                # Nota: En un entorno real dejaríamos n_trials=50 o 100.
-                # Usamos 5 para que tu prueba local no tarde horas.
+                print(f" Optimizando {model_name}...")
                 study = self.optimize_model(X, y, model_name, n_trials=5)
-
-                print(f"✅ Mejor ROC AUC para {model_name}: {study.best_value:.4f}")
+                print(f" Mejor ROC AUC para {model_name}: {study.best_value:.4f}")
 
                 if study.best_value > best_overall_score:
                     best_overall_score = study.best_value
                     best_overall_model_name = model_name
-
-                    # Reconstruir el mejor pipeline completo
                     preprocessor = create_preprocessor_pipeline()
                     best_clf = get_model_and_space(study.best_trial, model_name)
                     best_pipeline = Pipeline(
                         steps=[("preprocessor", preprocessor), ("classifier", best_clf)]
                     )
 
-            # Entrenar el pipeline campeón con el 100% de los datos
             print(
-                f"🏆 Campeón: {best_overall_model_name} (ROC AUC: {best_overall_score:.4f})"
+                f" Campeón: {best_overall_model_name} (ROC AUC: {best_overall_score:.4f})"
             )
             best_pipeline.fit(X, y)
 
-            # Guardar el modelo localmente
             os.makedirs("ml/saved_models", exist_ok=True)
             model_path = "ml/saved_models/champion_model.joblib"
             joblib.dump(best_pipeline, model_path)
             print(f"💾 Modelo campeón guardado en: {model_path}")
 
-            # Registrar al campeón en MLflow
             mlflow.log_param("champion_model", best_overall_model_name)
             mlflow.log_metric("champion_roc_auc", best_overall_score)
 

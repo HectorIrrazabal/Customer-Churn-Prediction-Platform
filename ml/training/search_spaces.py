@@ -1,5 +1,3 @@
-"""Definición de espacios de búsqueda de hiperparámetros para Optuna."""
-
 import lightgbm as lgb
 import xgboost as xgb
 from catboost import CatBoostClassifier
@@ -8,15 +6,6 @@ from sklearn.linear_model import LogisticRegression
 
 
 def get_model_and_space(trial, model_name: str):
-    """Devuelve una instancia del modelo con hiperparámetros sugeridos por Optuna.
-
-    Args:
-        trial: Objeto trial de Optuna.
-        model_name: Nombre del algoritmo.
-
-    Returns:
-        Instancia del modelo de scikit-learn (o compatible).
-    """
     if model_name == "LogisticRegression":
         C = trial.suggest_float("C", 1e-4, 10.0, log=True)
         return LogisticRegression(C=C, max_iter=1000, random_state=42)
