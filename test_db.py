@@ -3,16 +3,11 @@ from database.models.prediction import PredictionModel
 from database.repositories.prediction_repository import PredictionRepository
 from database.session import SessionLocal, engine
 
-# 1. Crear las tablas en la base de datos local (SQLite)
-print("Creando tablas...")
 Base.metadata.create_all(bind=engine)
 
-# 2. Inicializar sesión y repositorio
 db_session = SessionLocal()
 repo = PredictionRepository(db_session)
 
-# 3. Insertar un registro simulado (Inspirado en IBM Telco Dataset)
-print("Insertando una predicción de prueba...")
 nueva_prediccion = PredictionModel(
     customer_id="7590-VHVEG",
     features={
@@ -34,8 +29,6 @@ nueva_prediccion = PredictionModel(
 
 repo.create(nueva_prediccion)
 
-# 4. Consultar y verificar integridad
-print("Consultando historial...")
 historial = repo.get_all()
 for registro in historial:
     print(
@@ -44,4 +37,3 @@ for registro in historial:
     )
 
 db_session.close()
-print("Prueba completada de manera exitosa.")

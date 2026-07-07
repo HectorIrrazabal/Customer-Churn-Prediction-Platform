@@ -1,4 +1,4 @@
-# ui.Dockerfile
+
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -8,11 +8,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copiar el código de la UI y los assets generados (imágenes SHAP)
+
 COPY ui/ /app/ui/
 COPY docs/assets/images/ /app/docs/assets/images/
 
 EXPOSE 8501
 
-# Comando para ejecutar Streamlit
+
 CMD ["streamlit", "run", "ui/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
