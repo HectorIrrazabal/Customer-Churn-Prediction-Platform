@@ -12,7 +12,7 @@ class BatchService:
     OUTPUT_DIR = Path("data/batch_outputs")
 
     def __init__(self):
-       
+
         self.INPUT_DIR.mkdir(parents=True, exist_ok=True)
         self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -24,7 +24,7 @@ class BatchService:
     def process_csv_task(self, task_id: str, file_path: Path) -> None:
 
         try:
-            
+
             df = pd.read_csv(file_path)
 
             if "Churn" in df.columns:
@@ -45,7 +45,7 @@ class BatchService:
         except Exception as e:
 
             print(f"Error procesando la tarea {task_id}: {str(e)}")
-       
+
             error_path = self.OUTPUT_DIR / f"{task_id}_error.txt"
             error_path.write_text(f"Fallo en procesamiento: {str(e)}")
 
